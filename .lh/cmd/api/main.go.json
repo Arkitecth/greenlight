@@ -1,0 +1,62 @@
+{
+    "sourceFile": "cmd/api/main.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 11,
+            "patches": [
+                {
+                    "date": 1737052593552,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737052603801,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,1 +1,5 @@\n-package main\n\\ No newline at end of file\n+package main\n+\n+func main() {\n+\tfmt.Println(\"Hello World\")\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052611249,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,7 @@\n package main\n \n+import \"fmt\"\n+\n func main() {\n-\tfmt.Println(\"Hello World\")\n+\tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052698709,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n package main\n \n import \"fmt\"\n \n+const version = \"1.0.0\"\n func main() {\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052709044,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,7 +2,11 @@\n \n import \"fmt\"\n \n const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+}\n func main() {\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052735690,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,17 @@\n+package main\n+\n+import \"fmt\"\n+\n+const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+\tenv string\n+}\n+\n+type application struct {\n+\t\n+}\n+func main() {\n+\tfmt.Println(\"Hello World!\")\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052749378,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,21 +9,9 @@\n \tenv string\n }\n \n type application struct {\n-\t\n+\tconfig config\n }\n func main() {\n \tfmt.Println(\"Hello World!\")\n-}\n-package main\n-\n-import \"fmt\"\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-}\n-func main() {\n-\tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052761764,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,10 @@\n package main\n \n-import \"fmt\"\n+import (\n+\t\"fmt\"\n+\t\"log/slog\"\n+)\n \n const version = \"1.0.0\"\n \n type config struct {\n@@ -10,8 +13,10 @@\n }\n \n type application struct {\n \tconfig config\n+\tlogger *slog.Logger\n }\n func main() {\n+\tvar cfg config\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052776052,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n package main\n \n import (\n+\t\"flag\"\n \t\"fmt\"\n \t\"log/slog\"\n )\n \n@@ -16,7 +17,9 @@\n \tconfig config\n \tlogger *slog.Logger\n }\n func main() {\n-\tvar cfg config\n+\tvar cfg config \n+\n+\tflag.IntVar(&cfg.port, \"port\", 4000)\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052789179,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,7 +19,8 @@\n }\n func main() {\n \tvar cfg config \n \n-\tflag.IntVar(&cfg.port, \"port\", 4000)\n+\tflag.IntVar(&cfg.port, \"port\", 4000, \"API server port\")\n+\tflag.StringVar(&cfg.env, \"env\")\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052807826,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,7 +20,7 @@\n func main() {\n \tvar cfg config \n \n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API server port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"development\")\n+\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737052838647,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,6 +24,10 @@\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API server port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\n+\tapp := &application{\n+\t\tconfig: cfg,\n+\t}\n \tfmt.Println(\"Hello World!\")\n }\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1737052593552,
+            "name": "Commit-0",
+            "content": "package main"
+        }
+    ]
+}

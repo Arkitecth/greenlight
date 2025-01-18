@@ -1,0 +1,22 @@
+{
+    "sourceFile": "cmd/api/healthcheck.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1737053324401,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737053329797,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,4 +1,5 @@\n+package main\n func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {\n \tfmt.Fprintln(w, \"status: available\")\n \tfmt.Fprintf(w, \"environment: %s\\n\", app.config.env)\n \tfmt.Fprintf(w, \"version: %s\\n\", version)\n"
+                }
+            ],
+            "date": 1737053324401,
+            "name": "Commit-0",
+            "content": "func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {\n\tfmt.Fprintln(w, \"status: available\")\n\tfmt.Fprintf(w, \"environment: %s\\n\", app.config.env)\n\tfmt.Fprintf(w, \"version: %s\\n\", version)\n}"
+        }
+    ]
+}
