@@ -75,7 +75,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 			panic(err)
 		
 		default:
-				return err
+			return err
 		}
 	}
 
