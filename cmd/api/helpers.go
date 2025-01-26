@@ -36,7 +36,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
 	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields() 
+	dec.DisallowUnknownFields()
 
 	err := dec.Decode(dst)
 	if err != nil {
