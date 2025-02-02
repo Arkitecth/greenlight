@@ -1,0 +1,18 @@
+{
+    "sourceFile": "README.MD",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1738530304531,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1738530304531,
+            "name": "Commit-0",
+            "content": "# Greenlight API\n\nA Movie API from Alex Edwards Lets Go Further.\n"
+        }
+    ]
+}
