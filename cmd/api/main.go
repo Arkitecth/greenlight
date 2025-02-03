@@ -37,7 +37,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: mux,
+		Handler: app.routes(),
 		IdleTimeout: time.Minute,
 		ReadTimeout: 5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -50,3 +50,5 @@ func main() {
 	logger.Error(err.Error())
 	os.Exit(1)
 }
+
+//Write a HTTP Server That Returns Aspects of your CPU to a Page 

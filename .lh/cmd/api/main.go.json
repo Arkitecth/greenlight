@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 35,
+            "activePatchIndex": 48,
             "patches": [
                 {
                     "date": 1738530134384,
@@ -148,6 +148,58 @@
                 {
                     "date": 1738531465240,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,8 @@\n \t\"fmt\"\n \t\"log/slog\"\n \t\"net/http\"\n \t\"os\"\n-\t\"sync\"\n \t\"time\"\n )\n \n const version = \"1.0.0\"\n@@ -41,9 +40,8 @@\n \t\tHandler: mux,\n \t\tIdleTimeout: time.Minute,\n \t\tReadTimeout: 5 * time.Second,\n \t\tWriteTimeout: 10 * time.Second,\n-\t\tmu: sync.Mutex{},\n \t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n \t}\n \n \tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n"
+                },
+                {
+                    "date": 1738596396159,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -48,5 +48,7 @@\n \n \terr := srv.ListenAndServe()\n \tlogger.Error(err.Error())\n \tos.Exit(1)\n-}\n\\ No newline at end of file\n+}\n+\n+//Write a HTTP Server That Displays Aspects of Your CPU's to a Blank Page \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738596407427,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -50,5 +50,5 @@\n \tlogger.Error(err.Error())\n \tos.Exit(1)\n }\n \n-//Write a HTTP Server That Displays Aspects of Your CPU's to a Blank Page \n\\ No newline at end of file\n+//Write a HTTP Server That Displays Aspects of Your CPU's to a Page\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738596421476,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -50,5 +50,5 @@\n \tlogger.Error(err.Error())\n \tos.Exit(1)\n }\n \n-//Write a HTTP Server That Displays Aspects of Your CPU's to a Page\n\\ No newline at end of file\n+//Write a HTTP Server That Returns Aspects of your CPU to a Page \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738599091925,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,9 @@\n }\n \n type application struct {\n \tconfig config \n-\tlogger *slog.Logger\n+\tlogger slog.Logger\n }\n \n func main() {\n \tvar cfg config\n"
+                },
+                {
+                    "date": 1738599097560,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,9 +28,9 @@\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n-\t\tlogger: logger,\n+\t\tlogger: &logger,\n \t}\n \n \tmux := http.NewServeMux()\n \tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n"
+                },
+                {
+                    "date": 1738599112567,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,9 @@\n }\n \n type application struct {\n \tconfig config \n-\tlogger slog.Logger\n+\tlogger *slog.Logger\n }\n \n func main() {\n \tvar cfg config\n@@ -28,9 +28,9 @@\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n-\t\tlogger: &logger,\n+\t\tlogger: *logger,\n \t}\n \n \tmux := http.NewServeMux()\n \tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n"
+                },
+                {
+                    "date": 1738599123100,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -16,9 +16,9 @@\n \tenv string\n }\n \n type application struct {\n-\tconfig config \n+\tconfig *config \n \tlogger *slog.Logger\n }\n \n func main() {\n@@ -28,9 +28,9 @@\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n-\t\tlogger: *logger,\n+\t\tlogger: logger,\n \t}\n \n \tmux := http.NewServeMux()\n \tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n"
+                },
+                {
+                    "date": 1738599130637,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -16,9 +16,9 @@\n \tenv string\n }\n \n type application struct {\n-\tconfig *config \n+\tconfig config \n \tlogger *slog.Logger\n }\n \n func main() {\n"
+                },
+                {
+                    "date": 1738599162467,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,9 +26,9 @@\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tapp := &application{\n+\tapp := application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n \n"
+                },
+                {
+                    "date": 1738599189456,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,9 +34,9 @@\n \n \tmux := http.NewServeMux()\n \tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n \n-\tsrv := &http.Server{\n+\tsrv := http.Server{\n \t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n \t\tHandler: mux,\n \t\tIdleTimeout: time.Minute,\n \t\tReadTimeout: 5 * time.Second,\n"
+                },
+                {
+                    "date": 1738599409218,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,19 +26,19 @@\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tapp := application{\n+\tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n \n \tmux := http.NewServeMux()\n \tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n \n-\tsrv := http.Server{\n+\tsrv := &http.Server{\n \t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: mux,\n+\t\tHandler: app.routes(),\n \t\tIdleTimeout: time.Minute,\n \t\tReadTimeout: 5 * time.Second,\n \t\tWriteTimeout: 10 * time.Second,\n \t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n"
+                },
+                {
+                    "date": 1738599414747,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,54 @@\n+package main\n+\n+import (\n+\t\"flag\"\n+\t\"fmt\"\n+\t\"log/slog\"\n+\t\"net/http\"\n+\t\"os\"\n+\t\"time\"\n+)\n+\n+const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+\tenv string\n+}\n+\n+type application struct {\n+\tconfig config \n+\tlogger *slog.Logger\n+}\n+\n+func main() {\n+\tvar cfg config\n+\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n+\tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n+\tflag.Parse() \n+\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\tapp := application{\n+\t\tconfig: cfg,\n+\t\tlogger: logger,\n+\t}\n+\n+\tmux := http.NewServeMux()\n+\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n+\n+\tsrv := &http.Server{\n+\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n+\t\tHandler: app.routes(),\n+\t\tIdleTimeout: time.Minute,\n+\t\tReadTimeout: 5 * time.Second,\n+\t\tWriteTimeout: 10 * time.Second,\n+\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n+\t}\n+\n+\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n+\n+\terr := srv.ListenAndServe()\n+\tlogger.Error(err.Error())\n+\tos.Exit(1)\n+}\n+\n+//Write a HTTP Server That Returns Aspects of your CPU to a Page \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738599463143,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,62 +26,8 @@\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tapp := application{\n-\t\tconfig: cfg,\n-\t\tlogger: logger,\n-\t}\n-\n-\tmux := http.NewServeMux()\n-\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n-\n-\tsrv := &http.Server{\n-\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: app.routes(),\n-\t\tIdleTimeout: time.Minute,\n-\t\tReadTimeout: 5 * time.Second,\n-\t\tWriteTimeout: 10 * time.Second,\n-\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n-\t}\n-\n-\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n-\n-\terr := srv.ListenAndServe()\n-\tlogger.Error(err.Error())\n-\tos.Exit(1)\n-}\n-\n-//Write a HTTP Server That Returns Aspects of your CPU to a Page \n-package main\n-\n-import (\n-\t\"flag\"\n-\t\"fmt\"\n-\t\"log/slog\"\n-\t\"net/http\"\n-\t\"os\"\n-\t\"time\"\n-)\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-\tenv string\n-}\n-\n-type application struct {\n-\tconfig config \n-\tlogger *slog.Logger\n-}\n-\n-func main() {\n-\tvar cfg config\n-\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n-\tflag.Parse() \n-\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
                 }
             ],
             "date": 1738530134384,
