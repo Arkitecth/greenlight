@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 48,
+            "activePatchIndex": 57,
             "patches": [
                 {
                     "date": 1738530134384,
@@ -200,6 +200,42 @@
                 {
                     "date": 1738599463143,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,62 +26,8 @@\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tapp := application{\n-\t\tconfig: cfg,\n-\t\tlogger: logger,\n-\t}\n-\n-\tmux := http.NewServeMux()\n-\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n-\n-\tsrv := &http.Server{\n-\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: app.routes(),\n-\t\tIdleTimeout: time.Minute,\n-\t\tReadTimeout: 5 * time.Second,\n-\t\tWriteTimeout: 10 * time.Second,\n-\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n-\t}\n-\n-\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n-\n-\terr := srv.ListenAndServe()\n-\tlogger.Error(err.Error())\n-\tos.Exit(1)\n-}\n-\n-//Write a HTTP Server That Returns Aspects of your CPU to a Page \n-package main\n-\n-import (\n-\t\"flag\"\n-\t\"fmt\"\n-\t\"log/slog\"\n-\t\"net/http\"\n-\t\"os\"\n-\t\"time\"\n-)\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-\tenv string\n-}\n-\n-type application struct {\n-\tconfig config \n-\tlogger *slog.Logger\n-}\n-\n-func main() {\n-\tvar cfg config\n-\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n-\tflag.Parse() \n-\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
+                },
+                {
+                    "date": 1738601784582,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,9 +23,9 @@\n \n func main() {\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"environment\", \"Environment (development|staging|production)\")\n+\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n"
+                },
+                {
+                    "date": 1738623886171,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,8 +21,12 @@\n \tlogger *slog.Logger\n }\n \n func main() {\n+\n+\ttype aux := struct {\n+\t\t\n+\t}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
+                },
+                {
+                    "date": 1738623896389,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,10 +22,10 @@\n }\n \n func main() {\n \n-\ttype aux := struct {\n-\t\t\n+\taux := struct {\n+\t\tID int\n \t}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n"
+                },
+                {
+                    "date": 1738623903311,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,10 +23,12 @@\n \n func main() {\n \n \taux := struct {\n-\t\tID int\n-\t}\n+\t\tID int \n+\t\tS\n+\n+\t}{}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
+                },
+                {
+                    "date": 1738623912269,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,9 +24,10 @@\n func main() {\n \n \taux := struct {\n \t\tID int \n-\t\tS\n+\t\tName string \n+\t\tDate string\n \n \t}{}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n"
+                },
+                {
+                    "date": 1738623917797,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,11 @@\n \t\tID int \n \t\tName string \n \t\tDate string\n \n-\t}{}\n+\t}{\n+\t\tID: 1,\n+\t}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
+                },
+                {
+                    "date": 1738623925743,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,8 +29,10 @@\n \t\tDate string\n \n \t}{\n \t\tID: 1,\n+\t\tName: \"Trent\",\n+\t\tDate: time.April.String(),\n \t}\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n"
+                },
+                {
+                    "date": 1738623937969,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,8 +32,10 @@\n \t\tID: 1,\n \t\tName: \"Trent\",\n \t\tDate: time.April.String(),\n \t}\n+\n+\tname := aux.ID\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
+                },
+                {
+                    "date": 1738623944808,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,21 +21,8 @@\n \tlogger *slog.Logger\n }\n \n func main() {\n-\n-\taux := struct {\n-\t\tID int \n-\t\tName string \n-\t\tDate string\n-\n-\t}{\n-\t\tID: 1,\n-\t\tName: \"Trent\",\n-\t\tDate: time.April.String(),\n-\t}\n-\n-\tname := aux.ID\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
                 }
             ],
             "date": 1738530134384,

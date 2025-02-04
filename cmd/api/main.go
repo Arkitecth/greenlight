@@ -24,7 +24,7 @@ type application struct {
 func main() {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "API Server Port")
-	flag.StringVar(&cfg.env, "env", "environment", "Environment (development|staging|production)")
+	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 	flag.Parse() 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	app := &application{
