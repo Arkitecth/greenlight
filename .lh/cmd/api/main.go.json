@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 57,
+            "activePatchIndex": 82,
             "patches": [
                 {
                     "date": 1738530134384,
@@ -236,6 +236,106 @@
                 {
                     "date": 1738623944808,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,21 +21,8 @@\n \tlogger *slog.Logger\n }\n \n func main() {\n-\n-\taux := struct {\n-\t\tID int \n-\t\tName string \n-\t\tDate string\n-\n-\t}{\n-\t\tID: 1,\n-\t\tName: \"Trent\",\n-\t\tDate: time.April.String(),\n-\t}\n-\n-\tname := aux.ID\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.Parse() \n"
+                },
+                {
+                    "date": 1738851582401,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,8 +6,10 @@\n \t\"log/slog\"\n \t\"net/http\"\n \t\"os\"\n \t\"time\"\n+\n+\t_ \"github.com/lib/pq\"\n )\n \n const version = \"1.0.0\"\n \n"
+                },
+                {
+                    "date": 1738851599191,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -15,8 +15,11 @@\n \n type config struct {\n \tport int \n \tenv string\n+\tdb struct {\n+\t\tdsn string\n+\t}\n }\n \n type application struct {\n \tconfig config \n"
+                },
+                {
+                    "date": 1738851608499,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -15,11 +15,8 @@\n \n type config struct {\n \tport int \n \tenv string\n-\tdb struct {\n-\t\tdsn string\n-\t}\n }\n \n type application struct {\n \tconfig config \n"
+                },
+                {
+                    "date": 1738851627216,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,57 @@\n+package main\n+\n+import (\n+\t\"flag\"\n+\t\"fmt\"\n+\t\"log/slog\"\n+\t\"net/http\"\n+\t\"os\"\n+\t\"time\"\n+)\n+\n+const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+\tenv string\n+\tdb struct {\n+\t\tdsn string\n+\t}\n+}\n+\n+type application struct {\n+\tconfig config \n+\tlogger *slog.Logger\n+}\n+\n+func main() {\n+\tvar cfg config\n+\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n+\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n+\tflag.Parse() \n+\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\tapp := &application{\n+\t\tconfig: cfg,\n+\t\tlogger: logger,\n+\t}\n+\n+\tmux := http.NewServeMux()\n+\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n+\n+\tsrv := &http.Server{\n+\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n+\t\tHandler: app.routes(),\n+\t\tIdleTimeout: time.Minute,\n+\t\tReadTimeout: 5 * time.Second,\n+\t\tWriteTimeout: 10 * time.Second,\n+\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n+\t}\n+\n+\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n+\n+\terr := srv.ListenAndServe()\n+\tlogger.Error(err.Error())\n+\tos.Exit(1)\n+}\n+\n+//Write a HTTP Server That Returns Aspects of your CPU to a Page \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851647884,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,8 +27,9 @@\n func main() {\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n+\tflag.StringVar(&cfg.db.dsn)\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n@@ -53,61 +54,5 @@\n \tlogger.Error(err.Error())\n \tos.Exit(1)\n }\n \n-//Write a HTTP Server That Returns Aspects of your CPU to a Page \n-package main\n-\n-import (\n-\t\"flag\"\n-\t\"fmt\"\n-\t\"log/slog\"\n-\t\"net/http\"\n-\t\"os\"\n-\t\"time\"\n-\n-\t_ \"github.com/lib/pq\"\n-)\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-\tenv string\n-}\n-\n-type application struct {\n-\tconfig config \n-\tlogger *slog.Logger\n-}\n-\n-func main() {\n-\tvar cfg config\n-\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n-\tflag.Parse() \n-\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tapp := &application{\n-\t\tconfig: cfg,\n-\t\tlogger: logger,\n-\t}\n-\n-\tmux := http.NewServeMux()\n-\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n-\n-\tsrv := &http.Server{\n-\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: app.routes(),\n-\t\tIdleTimeout: time.Minute,\n-\t\tReadTimeout: 5 * time.Second,\n-\t\tWriteTimeout: 10 * time.Second,\n-\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n-\t}\n-\n-\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n-\n-\terr := srv.ListenAndServe()\n-\tlogger.Error(err.Error())\n-\tos.Exit(1)\n-}\n-\n //Write a HTTP Server That Returns Aspects of your CPU to a Page \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851658630,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,9 @@\n func main() {\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n-\tflag.StringVar(&cfg.db.dsn)\n+\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n"
+                },
+                {
+                    "date": 1738851670397,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,9 @@\n func main() {\n \tvar cfg config\n \tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n-\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word\")\n+\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tapp := &application{\n \t\tconfig: cfg,\n"
+                },
+                {
+                    "date": 1738851690055,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -30,8 +30,9 @@\n \tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n \tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\tdb, err := openDB(cfg)\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
+                },
+                {
+                    "date": 1738851702164,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -31,8 +31,11 @@\n \tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n \tflag.Parse() \n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tdb, err := openDB(cfg)\n+\tif err != nil {\n+\t\tlogger.Error(err.Error())\n+\t}\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
+                },
+                {
+                    "date": 1738851712691,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,9 +33,12 @@\n \tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n \tdb, err := openDB(cfg)\n \tif err != nil {\n \t\tlogger.Error(err.Error())\n+\t\tos.Exit(1)\n \t}\n+\n+\tdefer db.Close()\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
+                },
+                {
+                    "date": 1738851732604,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -37,8 +37,10 @@\n \t\tos.Exit(1)\n \t}\n \n \tdefer db.Close()\n+\n+\tlogger.Info(\"database connection pool established\")\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n"
+                },
+                {
+                    "date": 1738851751038,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -39,8 +39,9 @@\n \n \tdefer db.Close()\n \n \tlogger.Info(\"database connection pool established\")\n+\n \tapp := &application{\n \t\tconfig: cfg,\n \t\tlogger: logger,\n \t}\n@@ -58,9 +59,9 @@\n \t}\n \n \tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n \n-\terr := srv.ListenAndServe()\n+\terr = srv.ListenAndServe()\n \tlogger.Error(err.Error())\n \tos.Exit(1)\n }\n \n"
+                },
+                {
+                    "date": 1738851778391,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,72 @@\n+package main\n+\n+import (\n+\t\"database/sql\"\n+\t\"flag\"\n+\t\"fmt\"\n+\t\"log/slog\"\n+\t\"net/http\"\n+\t\"os\"\n+\t\"time\"\n+)\n+\n+const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+\tenv string\n+\tdb struct {\n+\t\tdsn string\n+\t}\n+}\n+\n+type application struct {\n+\tconfig config \n+\tlogger *slog.Logger\n+}\n+\n+func main() {\n+\tvar cfg config\n+\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n+\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n+\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n+\tflag.Parse() \n+\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\tdb, err := openDB(cfg)\n+\tif err != nil {\n+\t\tlogger.Error(err.Error())\n+\t\tos.Exit(1)\n+\t}\n+\n+\tdefer db.Close()\n+\n+\tlogger.Info(\"database connection pool established\")\n+\n+\tapp := &application{\n+\t\tconfig: cfg,\n+\t\tlogger: logger,\n+\t}\n+\n+\tmux := http.NewServeMux()\n+\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n+\n+\tsrv := &http.Server{\n+\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n+\t\tHandler: app.routes(),\n+\t\tIdleTimeout: time.Minute,\n+\t\tReadTimeout: 5 * time.Second,\n+\t\tWriteTimeout: 10 * time.Second,\n+\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n+\t}\n+\n+\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n+\n+\terr = srv.ListenAndServe()\n+\tlogger.Error(err.Error())\n+\tos.Exit(1)\n+}\n+\n+\n+func openDB(cfg config) (*sql.DB, error) {\n+\tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851784157,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -68,73 +68,8 @@\n \n \n func openDB(cfg config) (*sql.DB, error) {\n \tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n-}\n-package main\n-\n-import (\n-\t\"flag\"\n-\t\"fmt\"\n-\t\"log/slog\"\n-\t\"net/http\"\n-\t\"os\"\n-\t\"time\"\n-)\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-\tenv string\n-\tdb struct {\n-\t\tdsn string\n-\t}\n-}\n-\n-type application struct {\n-\tconfig config \n-\tlogger *slog.Logger\n-}\n-\n-func main() {\n-\tvar cfg config\n-\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n-\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n-\tflag.Parse() \n-\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tdb, err := openDB(cfg)\n \tif err != nil {\n-\t\tlogger.Error(err.Error())\n-\t\tos.Exit(1)\n+\t\treturn nil, err\n \t}\n-\n-\tdefer db.Close()\n-\n-\tlogger.Info(\"database connection pool established\")\n-\n-\tapp := &application{\n-\t\tconfig: cfg,\n-\t\tlogger: logger,\n-\t}\n-\n-\tmux := http.NewServeMux()\n-\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n-\n-\tsrv := &http.Server{\n-\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: app.routes(),\n-\t\tIdleTimeout: time.Minute,\n-\t\tReadTimeout: 5 * time.Second,\n-\t\tWriteTimeout: 10 * time.Second,\n-\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n-\t}\n-\n-\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n-\n-\terr = srv.ListenAndServe()\n-\tlogger.Error(err.Error())\n-\tos.Exit(1)\n-}\n-\n\\ No newline at end of file\n-//Write a HTTP Server That Returns Aspects of your CPU to a Page \n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851803911,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n package main\n \n import (\n+\t\"context\"\n \t\"database/sql\"\n \t\"flag\"\n \t\"fmt\"\n \t\"log/slog\"\n@@ -71,5 +72,7 @@\n \tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n \tif err != nil {\n \t\treturn nil, err\n \t}\n+\n+\tctx, cancel := context.WithTimeout(context.Background())\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851810200,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,79 @@\n+package main\n+\n+import (\n+\t\"context\"\n+\t\"database/sql\"\n+\t\"flag\"\n+\t\"fmt\"\n+\t\"log/slog\"\n+\t\"net/http\"\n+\t\"os\"\n+\t\"time\"\n+)\n+\n+const version = \"1.0.0\"\n+\n+type config struct {\n+\tport int \n+\tenv string\n+\tdb struct {\n+\t\tdsn string\n+\t}\n+}\n+\n+type application struct {\n+\tconfig config \n+\tlogger *slog.Logger\n+}\n+\n+func main() {\n+\tvar cfg config\n+\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n+\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n+\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n+\tflag.Parse() \n+\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n+\tdb, err := openDB(cfg)\n+\tif err != nil {\n+\t\tlogger.Error(err.Error())\n+\t\tos.Exit(1)\n+\t}\n+\n+\tdefer db.Close()\n+\n+\tlogger.Info(\"database connection pool established\")\n+\n+\tapp := &application{\n+\t\tconfig: cfg,\n+\t\tlogger: logger,\n+\t}\n+\n+\tmux := http.NewServeMux()\n+\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n+\n+\tsrv := &http.Server{\n+\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n+\t\tHandler: app.routes(),\n+\t\tIdleTimeout: time.Minute,\n+\t\tReadTimeout: 5 * time.Second,\n+\t\tWriteTimeout: 10 * time.Second,\n+\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n+\t}\n+\n+\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n+\n+\terr = srv.ListenAndServe()\n+\tlogger.Error(err.Error())\n+\tos.Exit(1)\n+}\n+\n+\n+func openDB(cfg config) (*sql.DB, error) {\n+\tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n+\tif err != nil {\n+\t\treturn nil, err\n+\t}\n+\n+\tctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)\n+\tdefer cancel()\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851975129,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,7 @@\n package main\n \n import (\n-\t\"context\"\n \t\"database/sql\"\n \t\"flag\"\n \t\"fmt\"\n \t\"log/slog\"\n@@ -67,91 +66,8 @@\n \tos.Exit(1)\n }\n \n \n-func openDB(cfg config) (*sql.DB, error) {\n-\tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n-\tif err != nil {\n-\t\treturn nil, err\n-\t}\n+func openDB(dsn config) (*sql.DB, error) {\n \n-\tctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)\n-\tdefer cancel()\n-}\n-package main\n-\n-import (\n-\t\"context\"\n-\t\"database/sql\"\n-\t\"flag\"\n-\t\"fmt\"\n-\t\"log/slog\"\n-\t\"net/http\"\n-\t\"os\"\n-\t\"time\"\n-)\n-\n-const version = \"1.0.0\"\n-\n-type config struct {\n-\tport int \n-\tenv string\n-\tdb struct {\n-\t\tdsn string\n-\t}\n-}\n-\n-type application struct {\n-\tconfig config \n-\tlogger *slog.Logger\n-}\n-\n-func main() {\n-\tvar cfg config\n-\tflag.IntVar(&cfg.port, \"port\", 4000, \"API Server Port\")\n-\tflag.StringVar(&cfg.env, \"env\", \"development\", \"Environment (development|staging|production)\")\n-\tflag.StringVar(&cfg.db.dsn, \"db-dsn\", \"postgres://greenlight:pa55word@localhost/greenlight\", \"PostgreSQL DSN\")\n-\tflag.Parse() \n-\tlogger := slog.New(slog.NewTextHandler(os.Stdout, nil))\n-\tdb, err := openDB(cfg)\n-\tif err != nil {\n-\t\tlogger.Error(err.Error())\n-\t\tos.Exit(1)\n-\t}\n-\n-\tdefer db.Close()\n-\n-\tlogger.Info(\"database connection pool established\")\n-\n-\tapp := &application{\n-\t\tconfig: cfg,\n-\t\tlogger: logger,\n-\t}\n-\n-\tmux := http.NewServeMux()\n-\tmux.HandleFunc(\"/v1/healthcheck\", app.healthcheckHandler)\n-\n-\tsrv := &http.Server{\n-\t\tAddr: fmt.Sprintf(\":%d\", cfg.port),\n-\t\tHandler: app.routes(),\n-\t\tIdleTimeout: time.Minute,\n-\t\tReadTimeout: 5 * time.Second,\n-\t\tWriteTimeout: 10 * time.Second,\n-\t\tErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),\n-\t}\n-\n-\tlogger.Info(\"starting server\", \"addr\", srv.Addr, \"env\", cfg.env)\n-\n-\terr = srv.ListenAndServe()\n-\tlogger.Error(err.Error())\n-\tos.Exit(1)\n-}\n-\n-\n-func openDB(cfg config) (*sql.DB, error) {\n-\tdb, err := sql.Open(\"postgres\", cfg.db.dsn)\n-\tif err != nil {\n-\t\treturn nil, err\n-\t}\n-\n-\tctx, cancel := context.WithTimeout(context.Background())\n+\tsql.Open(\"postgres\", )\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738851985228,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -68,6 +68,6 @@\n \n \n func openDB(dsn config) (*sql.DB, error) {\n \n-\tsql.Open(\"postgres\", )\n+\tsql.Open(\"postgres\", dsn.db.dsn)\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852006421,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -68,6 +68,6 @@\n \n \n func openDB(dsn config) (*sql.DB, error) {\n \n-\tsql.Open(\"postgres\", dsn.db.dsn)\n+\tdb, err := sql.Open(\"postgres\", dsn.db.dsn)\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852012608,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -69,5 +69,8 @@\n \n func openDB(dsn config) (*sql.DB, error) {\n \n \tdb, err := sql.Open(\"postgres\", dsn.db.dsn)\n+\tif err != nil {\n+\t\treturn nil, err\n+\t}\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852034364,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -72,5 +72,7 @@\n \tdb, err := sql.Open(\"postgres\", dsn.db.dsn)\n \tif err != nil {\n \t\treturn nil, err\n \t}\n+\n+\tdb.PingContext(5  * time.Second)\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852047403,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -73,6 +73,9 @@\n \tif err != nil {\n \t\treturn nil, err\n \t}\n \n-\tdb.PingContext(5  * time.Second)\n+\terr := db.PingContext(5  * time.Second)\n+\tif err != nil {\n+\t\treturn nil, err\n+\t}\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852081791,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n package main\n \n import (\n+\t\"context\"\n \t\"database/sql\"\n \t\"flag\"\n \t\"fmt\"\n \t\"log/slog\"\n@@ -73,9 +74,11 @@\n \tif err != nil {\n \t\treturn nil, err\n \t}\n \n-\terr := db.PingContext(5  * time.Second)\n+\tctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)\n+\n+\terr = db.PingContext(5  * time.Second)\n \tif err != nil {\n \t\treturn nil, err\n \t}\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852091045,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -75,10 +75,11 @@\n \t\treturn nil, err\n \t}\n \n \tctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)\n+\tdefer cancel()\n \n-\terr = db.PingContext(5  * time.Second)\n+\terr = db.PingContext(ctx)\n \tif err != nil {\n \t\treturn nil, err\n \t}\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1738852097361,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -81,5 +81,7 @@\n \terr = db.PingContext(ctx)\n \tif err != nil {\n \t\treturn nil, err\n \t}\n+\n+\treturn db, nil\n }\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1738530134384,

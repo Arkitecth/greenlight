@@ -16,15 +16,8 @@ type Movie struct {
 	Version int32	`json:"version"`
 }
 
-type Tasks struct {
-	ID int64 	`json:"id"`
-	Content string `json:"content"`
-	Description string `json:"description,omitempty"`
-	CreatedAt time.Time	`json:"-"`
-	Version int32 	`json:"version"`
-}
-
 func ValidateMovie(v *validator.Validator, movie *Movie) {
+	
     v.Check(movie.Title != "", "title", "must be provided")
     v.Check(len(movie.Title) <= 500, "title", "must not be more than 500 bytes long")
 
